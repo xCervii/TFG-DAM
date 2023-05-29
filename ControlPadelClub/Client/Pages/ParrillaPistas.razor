@@ -1,0 +1,357 @@
+﻿@page "/pistas"
+@layout EmptyLayout
+@inject IJSRuntime js
+@inject ISessionStorageService almacenarSesionService
+@inject HttpClient http
+@inject IModalService Modal
+@inject NavigationManager navigationManager
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-md bg-white" style="padding: 0px;">
+        <div class="container"><a class="navbar-brand mx-auto" href="#"><img id="logo" src="./imgs/logoApp.png" width="200" height="100">&nbsp;</a></div>
+    </nav>
+    <section class="position-relative py-5 px-2 bg-imageIndex" style="align-items: center;display: flex;min-height: 100vh;background: none;background-color: rgb(242,242,242);">
+        <div class="container">
+            <div class="row d-flex justify-content-center opcionesRowSmall" style="width: auto;height: 60px;background: #d0d0d0;margin-right: 0px;margin-left: 0px;">
+
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <div id="fechaParrillaDiv" class="col-md-6 center-columnText opcionesColumnSmall" style="height: inherit;justify-content: end;/*background-color: palevioletred;*//*margin-bottom: 10px;*/"><span id="labelFechaDatapickerParrilla" class="mx-1"><strong>Fecha:</strong></span><input id="datepickerParrilla" @bind="fechaSeleccionada" @bind:event="oninput" @onchange="ElegirFecha" class="mx-1" type="date" style="width: 150px;height: 38px;/*min-width: 120px;*/"><button class="btn btn-danger mx-1" id="btnDiaAnterior" @onclick="GoToPreviousDay" type="button">&lt;</button><button class="btn btn-danger mx-1" id="btnHoy" @onclick="GoToToday" type="button">Hoy</button><button class="btn btn-danger mx-1" id="btnDiaSiguiente" @onclick="GoToNextDay" type="button">&gt;</button></div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="User">
+                    <Authorized>
+                        <div id="fechaParrillaDiv" class="col-md-6 center-columnText opcionesColumnSmall" style="height: inherit;justify-content: end;/*background-color: palevioletred;*//*margin-bottom: 10px;*/"><span id="labelFechaDatapickerParrilla" class="mx-1"><strong>Fecha:</strong></span><input id="datepickerParrilla" @bind="fechaSeleccionada" @bind:event="oninput" @onchange="ElegirFecha" class="mx-1" type="date" style="width: 150px;height: 38px;/*min-width: 120px;*/"><button class="btn btn-primary mx-1" id="btnDiaAnterior" @onclick="GoToPreviousDay" type="button">&lt;</button><button class="btn btn-primary mx-1" id="btnHoy" @onclick="GoToToday" type="button">Hoy</button><button class="btn btn-primary mx-1" id="btnDiaSiguiente" @onclick="GoToNextDay" type="button">&gt;</button></div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <div class="col-md-6 center-columnText opcionesColumnSmall" style="height: inherit;/*background-color: var(--bs-cyan);*/">
+                    <span id="labelFiltroNivelesParrilla" class="mx-1"><strong>Niveles:&nbsp;</strong></span>
+                    <select disabled class="form-select" id="filtroNivelInicial" @bind="@filtroNivelMin" style="width:100px; height:38px;">
+                        <option value selected></option>
+                        <option value="1,00">1.00</option>
+                        <option value="2,00">2.00</option>
+                        <option value="2,25">2.25</option>
+                        <option value="2,5">2.50</option>
+                        <option value="2,75">2.75</option>
+                        <option value="3,00">3.00</option>
+                        <option value="3,25">3.25</option>
+                        <option value="3,50">3.50</option>
+                        <option value="3,75">3.75</option>
+                        <option value="4,00">4.00</option>
+                        <option value="4,25">4.25</option>
+                        <option value="4,50">4.50</option>
+                        <option value="4,75">4.75</option>
+                        <option value="5,00">5.00</option>
+                        <option value="5,25">5.25</option>
+                        <option value="5,50">5.50</option>
+                        <option value="5,75">5.75</option>
+                        <option value="6,00">6.00</option>
+                    </select>
+                    <span id="label-a" class="mx-2"><strong>a</strong></span>
+                    <select disabled class="form-select" id="filtroNivelFinal" @bind="@filtroNivelMax" style="width:100px; height:38px;">
+                        <option value selected></option>
+                        <option value="1,00">1.00</option>
+                        <option value="2,00">2.00</option>
+                        <option value="2,25">2.25</option>
+                        <option value="2,5">2.50</option>
+                        <option value="2,75">2.75</option>
+                        <option value="3,00">3.00</option>
+                        <option value="3,25">3.25</option>
+                        <option value="3,50">3.50</option>
+                        <option value="3,75">3.75</option>
+                        <option value="4,00">4.00</option>
+                        <option value="4,25">4.25</option>
+                        <option value="4,50">4.50</option>
+                        <option value="4,75">4.75</option>
+                        <option value="5,00">5.00</option>
+                        <option value="5,25">5.25</option>
+                        <option value="5,50">5.50</option>
+                        <option value="5,75">5.75</option>
+                        <option value="6,00">6.00</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row gy-3 my-3">
+                @if (pistasParrilla == null || reservasFecha == null)
+                {
+                    <h3>Cargando pistas...</h3>
+                }
+
+                else
+                {
+                    @foreach (var pista in pistasParrilla)
+                    {
+                        var reservasPista = reservasFecha.FindAll(r => r.Pista.PistaId == pista.PistaId && pista.HoraInicio.ToShortTimeString() == r.HoraInicio.ToShortTimeString());
+                        List<JugadorDTO> jugadoresConfirmados = new List<JugadorDTO>();
+                        @foreach (var reserva in reservasPista)
+                        {
+                            if (reserva.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || reserva.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA))
+                            {
+                                if (reserva.User != null)
+                                {
+                                    jugadoresConfirmados.Add(reserva.User);
+                                }
+
+                                jugadoresConfirmados.AddRange(reserva.JugadoresInvitados);
+                            }
+                        }
+
+                        <div class="col-sm-6 col-md-4 col-lg-3">
+                            <div class="card">
+                                <h6 style="text-align: center;background-color: rgb(0,0,0);margin-bottom: 0;"><strong><span style="color: rgb(255, 255, 255);">PISTA @pista.Numero</span></strong></h6>
+
+                                @if (jugadoresConfirmados.Count == 4)
+                                {
+                                    <h6 style="text-align: center;background-color: rgba(255,0,0,0.85);margin-bottom: 0px;">@pista.HoraInicio.ToShortTimeString() - @pista.HoraFin.ToShortTimeString()</h6>
+                                }
+
+                                else
+                                {
+                                    <h6 style="text-align: center;background-color: rgba(200,194,62,0.85);margin-bottom: 0px;">@pista.HoraInicio.ToShortTimeString() - @pista.HoraFin.ToShortTimeString()</h6>
+                                }
+
+                                <div class="card-body">
+                                    <div class="card">
+                                        <div class="card-body pista">
+                                            <ul class="container4Squares" style="/*background-color: green;*/margin: 0px;padding: 0px;">
+                                                @foreach (var reserva in reservasPista)
+                                                {
+                                                    int i = 1;
+                                                    @foreach (var jugador in jugadoresConfirmados)
+                                                    {
+                                                        <li class="card grid-@i cardplayerContainer-@i" style="background-color: transparent;">
+                                                            <a @onclick="(() => VerPerfilUsuarioRegistrado(jugador))" style="text-decoration: none;color: black;">
+                                                                <div class="card cardplayer">
+                                                                    <h6 class="nivelPista"><span style="color: rgb(255, 255, 255);">@jugador.Nivel</span></h6>
+                                                                    <h6 class="nickPista">@jugador.Nick</h6>
+                                                                    <img class="imgPlayerPista" src="./imgs/logoPalaIndex.png">
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                        i++;
+                                                    }
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <h6 class="card-title" style="text-align: center;margin-bottom: 8px;margin-top: 9px;">En espera</h6>
+                                    <div style="display: flex;background-color: rgba(255,0,0,0.25);height: 111px;margin-bottom: 17px; overflow-y: auto; overflow-x: auto;">
+                                        <ul style="padding-left: 0px;">
+                                            @foreach (var reserva in reservasPista)
+                                            {
+                                                if (reserva.Estado == ReservaDTO.EstadoReserva.ESPERA)
+                                                {
+                                                    <li class="jugador_espera">@reserva.User.Nick - @reserva.User.Nivel</li>
+
+                                                    foreach (var invitado in reserva.JugadoresInvitados)
+                                                    {
+                                                        <li class="jugador_espera">@invitado.Nick - @invitado.Nivel</li>
+                                                    }
+                                                }
+                                            }
+                                        </ul>
+                                    </div>
+                                    <AuthorizeView Roles="Admin">
+                                        <Authorized>
+                                            <a class="btn btn-danger" style="display: flex;justify-content: center;" @onclick="(() => EditarJugadores(reservasPista, pista))">Editar</a>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                    <AuthorizeView Roles="User">
+                                        <Authorized>
+                                            @{
+                                                var reserva = reservasPista.Find(r => r.User != null && r.User.Nick == user.Nick);
+
+                                                if (reserva != null)
+                                                {
+                                                    <a @onclick="@(() => CancelarReserva(reserva))" class="btn btn-danger" style="display: flex;justify-content: center;">Cancelar</a>
+                                                }
+
+                                                else
+                                                {
+                                                    <a @onclick="@(() => Apuntarme(pista))" class="btn btn-primary" style="display: flex;justify-content: center;">Apuntarse</a>
+                                                }
+                                            }
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+    <footer class="text-center bg-dark">
+        <div class="d-flex justify-content-center align-items-center">
+            <p><br><span style="color: rgb(217, 217, 217); background-color: rgba(41, 44, 47, 0);">TFG Adrian.</span><br><br></p>
+        </div>
+        <div class="d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center social-links social-icons"><a href="#"><i class="fa fa-envelope"></i></a><a href="#"><i class="fa fa-linkedin"></i></a><a href="#"><i class="fa fa-github"></i></a></div>
+        <div class="d-flex justify-content-center align-items-center">
+            <p><br><span style="color: rgb(255, 171, 64); background-color: rgba(10, 10, 10, 0);">ControlPádelClub v1.0 - 2023</span><br><br></p>
+        </div>
+    </footer>
+</body>
+
+
+
+
+
+@code {
+
+
+    UsuarioRegistradoDTO user;
+    List<ReservaDTO> reservasFecha;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "fecha")]
+    public DateTime fechaSeleccionada { get; set; }
+
+    decimal filtroNivelMin;
+    decimal filtroNivelMax;
+
+    static int totalPistasParrilla = 8;
+    int totalPistasClub = 4;
+    PistaDTO[] pistasParrilla = new PistaDTO[totalPistasParrilla];
+
+    protected override async Task OnInitializedAsync()
+    {
+        string nick = await almacenarSesionService.GetItemAsync<string>("username");//recuperamos el nick de la memoria del navegador
+        user = await http.GetFromJsonAsync<UsuarioRegistradoDTO>($"api/GetUsuarioRegistradoByNick/{nick}");
+        
+        CargarPistas();
+        await CargarSolicitudesReserva();
+    }
+
+
+    private void CargarPistas()
+    {
+        DateTime horaInicio = new DateTime(fechaSeleccionada.Year, fechaSeleccionada.Month, fechaSeleccionada.Day, 8, 0, 0);
+        DateTime horaFin = new DateTime(fechaSeleccionada.Year, fechaSeleccionada.Month, fechaSeleccionada.Day, 9, 30, 0);
+
+        int id = 1;
+        for (int i = 0; i < totalPistasParrilla; i++)
+        {
+            var pista = new PistaDTO
+                {
+                    PistaId = id,
+                    Numero = id,
+                    HoraInicio = horaInicio,
+                    HoraFin = horaFin
+                };
+
+            pistasParrilla[i] = pista;
+            horaInicio = horaInicio.AddMinutes(30);
+            horaFin = horaFin.AddMinutes(30);
+            id = (id == totalPistasClub) ? 1 : id + 1;
+        }
+    }
+
+    private async Task CargarSolicitudesReserva()
+    {
+        reservasFecha = await http.GetFromJsonAsync<List<ReservaDTO>>("api/GetAllReservas");
+        reservasFecha = reservasFecha.FindAll(r => r.Fecha.ToShortDateString().Equals(fechaSeleccionada.ToShortDateString()));
+    }
+
+
+    private void Apuntarme(PistaDTO pista)
+    {
+        var parameters = new ModalParameters()
+        .Add(nameof(SolicitudReserva.fechaSeleccionada), fechaSeleccionada)
+        .Add(nameof(SolicitudReserva.pistaSeleccionada), pista)
+        .Add(nameof(SolicitudReserva.user), user);
+
+        Modal.Show<SolicitudReserva>("Solicitud de reserva", parameters);        
+    }
+
+    private void EditarJugadores(List<ReservaDTO> reservasPista, PistaDTO pista)
+    {
+        var parameters = new ModalParameters()
+            .Add(nameof(JugadoresPartida.ReservasPista), reservasPista)
+            .Add(nameof(JugadoresPartida.Pista), pista)
+            .Add(nameof(JugadoresPartida.FechaSeleccionada), fechaSeleccionada);
+
+        Modal.Show<JugadoresPartida>("Jugadores de la partida", parameters);
+    }
+
+    public async Task CancelarReserva(ReservaDTO reserva)
+    {
+        string msg = "¿Quieres cancelar la reserva?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            var response = await http.DeleteAsync($"api/DeleteReservaById/{reserva.ReservaId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                ReservaDTO[] reservasPistaConfirmadas = reservasFecha.Where(rDTO => rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)
+                && rDTO.Pista.PistaId == reserva.Pista.PistaId
+                && rDTO.Pista.HoraInicio.ToShortTimeString() == reserva.Pista.HoraInicio.ToShortTimeString()
+                ).ToArray();
+
+                reservasPistaConfirmadas = reservasPistaConfirmadas.Where(r => r.ReservaId != reserva.ReservaId).ToArray();
+
+                foreach (var r in reservasPistaConfirmadas)
+                {
+                    if (r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA))
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA;
+                        response = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response.IsSuccessStatusCode) return;
+                    }
+                }
+
+                navigationManager.NavigateTo($"/pistas?fecha={fechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+            }
+        }
+    }
+
+
+    private void VerPerfilUsuarioRegistrado(JugadorDTO jugador)
+    {
+        if (jugador.GetType().Name == "UsuarioRegistradoDTO")
+        {
+            navigationManager.NavigateTo($"perfil/{jugador.Nick}");
+        }
+    }
+
+    private void ElegirFecha()
+    {
+        navigationManager.NavigateTo($"/pistas?fecha={fechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+    }
+
+    private async Task GoToPreviousDay()
+    {
+        fechaSeleccionada = fechaSeleccionada.AddDays(-1);
+        await CargarSolicitudesReserva();
+        StateHasChanged();
+    }
+
+    private async Task GoToToday()
+    {
+        fechaSeleccionada = DateTime.Today;
+        await CargarSolicitudesReserva();
+        StateHasChanged();
+    }
+
+    private async Task GoToNextDay()
+    {
+        fechaSeleccionada = fechaSeleccionada.AddDays(1);
+        await CargarSolicitudesReserva();
+        StateHasChanged();
+    }
+}

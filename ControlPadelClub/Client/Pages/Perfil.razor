@@ -1,0 +1,136 @@
+﻿@page "/perfil/{nick}"
+@layout EmptyLayout
+@inject HttpClient http
+@inject NavigationManager navigationManager
+@inject ISessionStorageService almacenarSesionService
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+
+@if (user == null || userSearched == null)
+{
+    <text>Cargando...</text>
+}
+
+else if (user.Rol.RoleId != (int) RoleDTO.rol.Admin && !user.Nick.Equals(userSearched.Nick) && !userSearched.PerfilOptions.Publico)
+{
+    <label>Este perfil es privado</label>
+}
+
+else
+{
+ 
+    <body>
+        <nav class="navbar navbar-light navbar-expand-md bg-white" style="padding: 0px;">
+            <div class="container"><a class="navbar-brand mx-auto" href="#"><img id="logo" src="./imgs/logoApp.png" width="200" height="100">&nbsp;</a></div>
+        </nav>
+        <section class="position-relative py-5 px-2 bg-imageIndex" style="align-items: center;display: flex;min-height: 100vh;">
+            <div class="container">
+                <div class="row">
+                    <div class="col col-md-6 offset-md-3">
+                        <div class="card p-3 text-center" style="background-color: rgba(255,255,255,0.9);border: none;border-radius: 0px;">
+                            <div class="container"
+                             style="display: flex;
+                     justify-content: end;
+                     align-items: end;
+                     padding-right: 0px;
+                     ">
+                                <label class="switch">
+                                    @if (user.Nick.Equals(userSearched.Nick) || user.Rol.RoleId == (int)RoleDTO.rol.Admin)
+                                    {
+                                        <input @bind="@userSearched.PerfilOptions.Publico" type="checkbox" class="switch-input">
+                                    }
+
+                                    else
+                                    {
+                                        <input disabled @bind="@userSearched.PerfilOptions.Publico" type="checkbox" class="switch-input">
+                                    }
+
+                                    <span class="switch-label" data-on="Privado" data-off="Público"></span>
+                                    <span class="switch-handle"></span>
+                                </label>
+                            </div>
+                            <div class="d-flex flex-row justify-content-center mb-3">
+                                <div class="image"><img class="rounded-circle" src="https://www.worldpadeltour.com/media-content/2022/05/francisco-navarro-compn-d5d0783a50-220x260.JPG" style="width: 100px;height: 100px;"><button disabled class="btn btn-primary fa fa-camera" type="button"></button></div>
+                                <div class="d-flex flex-column ms-3 user-details">
+                                    <h4 class="mb-0"><strong><span style="color: rgb(0, 0, 0);">@(userSearched.Nombre + " " + userSearched.Apellidos)</span></strong></h4>
+                                    <div class="ratings"><span><span style="color: rgb(159, 167, 106);">@userSearched.Nivel</span></span><button disabled class="btn btn-sm disabled mx-0 fa fa-external-link" type="button" style="width: 46px;font-size: 22px;"></button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 offset-md-3">
+                        <FormularioDatosUsuario user="@user" userSearched="@userSearched" textoBtn="Guardar" onValidSubmit="@EditarUsuario" />
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="text-center bg-dark">
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(217, 217, 217); background-color: rgba(41, 44, 47, 0);">TFG Adrian.</span><br><br></p>
+            </div>
+            <div class="d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center social-links social-icons"><a href="#"><i class="fa fa-envelope"></i></a><a href="#"><i class="fa fa-linkedin"></i></a><a href="#"><i class="fa fa-github"></i></a></div>
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(255, 171, 64); background-color: rgba(10, 10, 10, 0);">ControlPádelClub v1.0 - 2023</span><br><br></p>
+            </div>
+        </footer>
+    </body>
+}
+
+
+@code {
+
+    [Parameter] public string nick { get; set; }
+
+    UsuarioRegistradoDTO userSearched { get; set; }
+    UsuarioRegistradoDTO user { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string nick = await almacenarSesionService.GetItemAsync<string>("username");//recuperamos el nick de la memoria del navegador
+        user = await http.GetFromJsonAsync<UsuarioRegistradoDTO>($"api/GetUsuarioRegistradoByNick/{nick}");
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        userSearched = await http.GetFromJsonAsync<UsuarioRegistradoDTO>($"api/GetUsuarioRegistradoByNick/{nick}");        
+    }
+
+
+    public async Task EditarUsuario()
+    {
+        var response = await http.PutAsJsonAsync("api/UpdateUsuarioRegistrado", userSearched);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var username = await almacenarSesionService.GetItemAsync<string>("username");
+
+            if (user.Nick.Equals(userSearched.Nick))
+            {
+                var usernameUpdated = userSearched.Nick;
+
+                //Si se ha actualizado el Nick tenemos que almacenar en la memoria del navegador el nuevo 'Nick' como "username"
+                if (username != usernameUpdated)
+                {
+                    await almacenarSesionService.SetItemAsync("username", usernameUpdated);
+                }
+            }
+
+            navigationManager.NavigateTo($"/perfil/{userSearched.Nick}", true);
+        }
+    }
+
+}

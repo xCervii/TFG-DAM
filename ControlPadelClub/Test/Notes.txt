@@ -1,0 +1,5 @@
+Dudas a resolver:
+
+1) ¿Que método elegir para objeter las reservas de un usuario? 
+	ReservaDTO[] reservasDTO = http.GetFromJsonAsync<ReservaDTO[]>($"api/GetAllReservasByUsuarioRegistradoNick/{user.Nick}");
+	ReservaDTO[] reservasDTO = user.Reservas.ToArray()

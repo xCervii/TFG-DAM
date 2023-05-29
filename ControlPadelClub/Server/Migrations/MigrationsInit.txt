@@ -1,0 +1,42 @@
+﻿            migrationBuilder.InsertData(
+            table: "Rol",
+            columns: new[] { "RolName" },
+            values: new object[,]
+            {
+               {"Admin"},
+               {"User"}
+            });
+
+            migrationBuilder.InsertData(
+            table: "Pista",
+            columns: new[] { "Numero" },
+            values: new object[,]
+            {
+               {"1"},
+               {"2"},
+               {"3"},
+               {"4"}
+            }
+            );
+
+            migrationBuilder.InsertData(
+            table: "UsuarioRegistrado",
+            columns: new[] { "Nick", "Nivel", "Nombre", "Apellidos", "Email", "Contraseña", "Telefono", "TipoNivel", "Sexo", "ManoHabil", "Posicion", "FechaNacimiento", "RoleId" },
+            values: new object[,]
+            {
+                {"admin", "4.25", "Adrian", "Benito", "adrian18.beni@gmail.com", "123456", "625601878", "Manual", "Hombre", "Derecha", "Drive", "18-02-1999", "1"},
+                {"cervi", "4.25", "Adrian", "Bricio", "adrian18.beni@gmail.com", "123456", "625601878", "Manual", "Hombre", "Derecha", "Drive", "18-02-1999","2"},
+                {"pepe", "4.25", "Pepe", "Gonzalez", "gonalez@gmail.com", "123456", "625601879", "Manual", "Hombre", "Derecha", "Drive", "18-02-1999","2"}
+            }
+            );
+
+            migrationBuilder.InsertData(
+            table: "PerfilOptions",
+            columns: new[] {"Publico", "HabilidadesActivas", "JugadorId"},
+            values: new object[,]
+            {
+                {true, false, "1"},
+                {true, false, "2"},
+                {true, false, "3"}
+            }
+            );

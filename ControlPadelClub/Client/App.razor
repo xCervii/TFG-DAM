@@ -1,0 +1,14 @@
+﻿<CascadingAuthenticationState>
+    <CascadingBlazoredModal Position="ModalPosition.Middle">
+        <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(EmptyLayout)" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(EmptyLayout)">
+                    <p>Lo sentimos, no se ha encontrado la ruta.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </CascadingBlazoredModal>
+</CascadingAuthenticationState>

@@ -1,0 +1,119 @@
+﻿@inject HttpClient http
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+
+<div class="mb-3">
+    <div class="mb-3">
+        <label class="form-label" style="margin-bottom: 0px;"><strong>Nick:</strong></label>
+        <input @bind="@InvitadoNick" class="form-control mx-2" type="text" style="width: 200px;display: inline;" required="">
+    </div>
+    <div style="display: inline;">
+        <label class="form-label" style="margin-bottom: 0px;display: inline;"><strong>Nivel:</strong></label>
+        <select @bind="@InvitadoNivel" class="form-select mx-2" style="width: 100px;
+                                 display: inline;" required>
+            <option value selected></option>
+            <option value="1,00">1,00</option>
+            <option value="2,00">2,00</option>
+            <option value="2,25">2,25</option>
+            <option value="2,50">2,50</option>
+            <option value="2,75">2,75</option>
+            <option value="3,00">3,00</option>
+            <option value="3,25">3,25</option>
+            <option value="3,50">3,50</option>
+            <option value="3,75">3,75</option>
+            <option value="4,00">4,00</option>
+            <option value="4,25">4,25</option>
+            <option value="4,50">4,50</option>
+            <option value="4,75">4,75</option>
+            <option value="5,00">5,00</option>
+            <option value="5,25">5,25</option>
+            <option value="5,50">5,50</option>
+            <option value="5,75">5,75</option>
+            <option value="6,00">6,00</option>
+        </select>
+    </div>
+</div>
+
+<div class="my-4">
+    <button @onclick="AñadirInvitadoPartida" class="btn btn-primary float-end me-3" type="button">Aceptar</button>
+</div>
+
+
+@code {
+
+    string InvitadoNick;
+    decimal InvitadoNivel;
+    [Parameter] public PistaDTO Pista { get; set; }
+    [Parameter] public DateTime FechaSeleccionada { get; set; }
+    [Parameter] public List<ReservaDTO> ReservasPista { get; set; }
+
+    private async Task AñadirInvitadoPartida()
+    {
+        string msg = $"¿Quieres añadir a la partida a: {InvitadoNick} ?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            int numJugadoresReserva = 1;
+            int numJugadoresConfirmados = 0;
+
+            ReservaDTO[] reservasPistaConfirmadas = ReservasPista.Where(r => r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)).ToArray();
+
+            foreach (var r in reservasPistaConfirmadas)
+            {
+                if (r.User != null) numJugadoresConfirmados++;
+                numJugadoresConfirmados = numJugadoresConfirmados + r.JugadoresInvitados.Count();
+            }
+
+            if (4 - numJugadoresConfirmados >= numJugadoresReserva)
+            {
+                ReservaDTO solicitudReserva = new ReservaDTO
+                    {
+                        Fecha = FechaSeleccionada,
+                        Pista = Pista,
+                        HoraInicio = Pista.HoraInicio,
+                        HoraFin = Pista.HoraFin,
+                        JugadoresInvitados = new List<JugadorInvitadoDTO>()
+                        {
+                            new JugadorInvitadoDTO()
+                            {
+                                Nick = InvitadoNick,
+                                Nivel = InvitadoNivel
+                            }
+                        },
+                        Pago = new PagoDTO
+                        {
+                            CantidadPago = (float)5,
+                            PagoRealizado = false,
+                            FormaPago = "Club"
+                        },
+                        Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA,
+                        Partida = null
+                    };
+
+                if (numJugadoresConfirmados + numJugadoresReserva == 4)
+                {
+                    solicitudReserva.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                    foreach (var r in reservasPistaConfirmadas)
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                        var response1 = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response1.IsSuccessStatusCode) return;
+                    }
+                }
+
+                var response2 = await http.PostAsJsonAsync("api/CrearReserva", solicitudReserva);
+
+                if (response2.IsSuccessStatusCode)
+                {
+                    navigationManager.NavigateTo($"/pistas?fecha={FechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+                }
+            }
+
+            else
+            {
+                await js.InvokeVoidAsync("alert", $"No se puede confirmar la reserva de '{numJugadoresReserva} jugadores' ya que en pista existen '{numJugadoresConfirmados} jugadores' confirmados y se superarían los 4 máximos necesarios");
+            }
+        }
+    }
+
+}

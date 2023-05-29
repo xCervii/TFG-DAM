@@ -1,0 +1,114 @@
+﻿@page "/"
+@page "/login"
+@layout EmptyLayout
+@inject NavigationManager navigationManager
+@inject HttpClient http
+@inject ISessionStorageService almacenarSesionService
+@inject AuthenticationStateProvider authStateProvider
+@inject IJSRuntime js
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+@if (iniciandoSesion)
+{
+    <text>Iniciando sesión...</text>
+}
+
+else
+{
+    <body>
+        <nav class="navbar navbar-light navbar-expand-md bg-white" style="padding: 0px;">
+            <div class="container"><a class="navbar-brand mx-auto" href="#"><img id="logo" src="./imgs/logoApp.png" width="200" height="100">&nbsp;</a></div>
+        </nav>
+        <section class="position-relative py-5 px-2 bg-imageIndex" style="align-items: center;display: flex;min-height: 100vh;">
+            <div class="container">
+                <div class="row">
+                    <div class="col col-md-6 offset-md-3">
+                        <EditForm Model="@loginData" OnValidSubmit="@IniciarSesion" class="shadow p-4" style="background-color: rgba(255,255,255,0.9);">
+                            <div class="mb-4">
+                                <h3 class="text-primary" style="text-align: center;font-size: 26px;"><strong>Iniciar sesión</strong></h3>
+                            </div>
+                            <div class="mb-3"><label class="form-label" style="margin-bottom: 0px;">Nick / Email</label><input @bind="@loginData.Username" class="form-control" type="text" id="username" name="usuario" placeholder="Usuario"></div>
+                            <div class="mb-3"><label class="form-label" style="margin-bottom: 0px;">Contraseña</label><input @bind=@loginData.Password class="form-control" type="password" id="password" name="contraseña" placeholder="Contraseña"></div>
+                            <div class="mb-4" style="margin-top: -13px;"><a href="#" class="disabled-link" style="text-decoration: none;font-size: 15px;">¿Has olvidado la contraseña?</a></div>
+                            <div class="mb-3 my-4" style="text-align: center;"><button class="btn btn-primary" type="submit" style="width: 100px; color: rgb(255, 255, 255);">Login</button></div>
+                            <hr>
+                            <div class="mb-1" style="text-align: center;"><label class="form-label" style="margin-right: 4px;font-size: 15px;">¿No tienes cuenta?</label><a @onclick='(() => navigationManager.NavigateTo("/registro"))' @onclick:preventDefault href="" style="text-decoration: none;font-size: 15px;">Regístrate</a></div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="text-center bg-dark">
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(217, 217, 217); background-color: rgba(41, 44, 47, 0);">TFG Adrian.</span><br><br></p>
+            </div>
+            <div class="d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center social-links social-icons"><a href="#"><i class="fa fa-envelope"></i></a><a href="#"><i class="fa fa-linkedin"></i></a><a href="#"><i class="fa fa-github"></i></a></div>
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(255, 171, 64); background-color: rgba(10, 10, 10, 0);">ControlPádelClub v1.0 - 2023</span><br><br></p>
+            </div>
+        </footer>
+    </body>
+
+}
+
+
+
+@code {
+
+    LoginDTO loginData = new LoginDTO();
+    bool iniciandoSesion;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var estadoAuth = await authStateProvider.GetAuthenticationStateAsync();
+        var user = estadoAuth.User;
+
+        //Si el usuario está logado evita que puede redirigirse a la página de login
+        if (user.Identity.IsAuthenticated)
+        {
+            StateHasChanged();
+            navigationManager.NavigateTo("menu-principal");
+        }
+    }
+
+
+    private async Task IniciarSesion()
+    {
+        iniciandoSesion = true;
+        StateHasChanged();
+
+        if (loginData.Username != null || loginData.Password != null)
+        {
+            //Busca en base de datos si el username coincide con la contraseña
+            var response = await http.PostAsJsonAsync<LoginDTO>("api/ValidarIniciarSesion", loginData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                loginData = await response.Content.ReadFromJsonAsync<LoginDTO>(); //Sacamos los datos de el login de vuelta
+                await almacenarSesionService.SetItemAsync("username", loginData.Username); //almacenamos en la memoria del navegador el "username"
+                await almacenarSesionService.SetItemAsync("role", loginData.Role.RolName); //almacenamos en la memoria del navegador el "rol"
+                navigationManager.NavigateTo("/menu-principal", true);
+            }
+
+            else
+            {
+                await js.InvokeVoidAsync("alert", "Usuario o contraseña incorrectos");
+                iniciandoSesion = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+}

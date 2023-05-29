@@ -1,0 +1,924 @@
+﻿@inject NavigationManager navigationManager
+
+
+@if (actualPage == "registro")
+{
+    <EditForm Model="@user" OnValidSubmit="@onValidSubmit" class="shadow p-4" style="background-color: rgba(255,255,255,0.9);">
+        @if (actualPage == "registro")
+        {
+            <div class="mb-4">
+                <h3 class="text-primary" style="text-align: center;font-size: 26px;"><strong>Crear nueva cuenta</strong></h3>
+            </div>
+        }
+
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Nick</label><input @bind="@user.Nick" class="form-control" type="text" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Nombre</label><input @bind="@user.Nombre" class="form-control" type="text" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Apellidos</label><input @bind="@user.Apellidos" class="form-control" type="text" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Email</label><input @bind="@user.Email" class="form-control" type="email" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Fecha de nacimiento</label><input @bind="@user.FechaNacimiento" class="form-control" type="date" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Teléfono</label><input @bind="@user.Telefono" class="form-control" type="tel" required=""></div>
+            <div class="col-md-6">
+                <label class="form-label" style="margin-bottom: 0px;">Sexo</label>
+                <select @bind="@user.Sexo" class="form-select" required="">
+                    <option value="" selected=""></option>
+                    <option value="Hombre">Hombre</option>
+                    <option value="Mujer">Mujer</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="margin-bottom: 0px;">Mano hábil</label>
+                <select @bind="@user.ManoHabil" class="form-select" required="">
+                    <option value="" selected=""></option>
+                    <option value="Derecha">Derecha</option>
+                    <option value="Izquierda">Izquierda</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="margin-bottom: 0px;">Posición</label>
+                <select @bind="@user.Posicion" class="form-select" required="">
+                    <option value="" selected=""></option>
+                    <option value="Drive">Drive</option>
+                    <option value="Reves">Revés</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label" style="margin-bottom: 0px;">Nivel</label>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized Context="Auth">
+                                <select @bind="@user.TipoNivel" class="form-select" required>
+                                    <option value="" selected></option>
+                                    <option value="Manual">Manual</option>
+                                    <option disabled value="Habilidades" data-bs-toggle="modal" data-bs-target="#modalFormHabilidades">Habilidades</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView Roles="User">
+                            <Authorized Context="Auth">
+                                <select @bind="@user.TipoNivel" class="form-select" required disabled>
+                                    <option value="" selected></option>
+                                    <option value="Manual">Manual</option>
+                                    <option disabled value="Habilidades" data-bs-toggle="modal" data-bs-target="#modalFormHabilidades">Habilidades</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView>
+                            <NotAuthorized Context="Auth">
+                                <select @bind="@user.TipoNivel" class="form-select" required>
+                                    <option value="" selected></option>
+                                    <option value="Manual">Manual</option>
+                                    <option disabled value="Habilidades" data-bs-toggle="modal" data-bs-target="#modalFormHabilidades">Habilidades</option>
+                                </select>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" style="margin-bottom: 0px;"></label>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized Context="Auth">
+                                <select @bind="@user.Nivel" class="form-select" required>
+                                    <option value="" selected=""></option>
+                                    <option value="1,00">1,00</option>
+                                    <option value="2,00">2,00</option>
+                                    <option value="2,25">2,25</option>
+                                    <option value="2,50">2,50</option>
+                                    <option value="2,75">2,75</option>
+                                    <option value="3,00">3,00</option>
+                                    <option value="3,25">3,25</option>
+                                    <option value="3,50">3,50</option>
+                                    <option value="3,75">3,75</option>
+                                    <option value="4,00">4,00</option>
+                                    <option value="4,25">4,25</option>
+                                    <option value="4,50">4,50</option>
+                                    <option value="4,75">4,75</option>
+                                    <option value="5,00">5,00</option>
+                                    <option value="5,25">5,25</option>
+                                    <option value="5,50">5,50</option>
+                                    <option value="5,75">5,75</option>
+                                    <option value="6,00">6,00</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView Roles="User">
+                            <Authorized Context="Auth">
+                                <select @bind="@user.Nivel" class="form-select" required disabled>
+                                    <option value="" selected=""></option>
+                                    <option value="1,00">1,00</option>
+                                    <option value="2,00">2,00</option>
+                                    <option value="2,25">2,25</option>
+                                    <option value="2,50">2,50</option>
+                                    <option value="2,75">2,75</option>
+                                    <option value="3,00">3,00</option>
+                                    <option value="3,25">3,25</option>
+                                    <option value="3,50">3,50</option>
+                                    <option value="3,75">3,75</option>
+                                    <option value="4,00">4,00</option>
+                                    <option value="4,25">4,25</option>
+                                    <option value="4,50">4,50</option>
+                                    <option value="4,75">4,75</option>
+                                    <option value="5,00">5,00</option>
+                                    <option value="5,25">5,25</option>
+                                    <option value="5,50">5,50</option>
+                                    <option value="5,75">5,75</option>
+                                    <option value="6,00">6,00</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView>
+                            <NotAuthorized Context="Auth">
+                                <select @bind="@user.Nivel" class="form-select" required>
+                                    <option value="" selected=""></option>
+                                    <option value="1,00">1,00</option>
+                                    <option value="2,00">2,00</option>
+                                    <option value="2,25">2,25</option>
+                                    <option value="2,50">2,50</option>
+                                    <option value="2,75">2,75</option>
+                                    <option value="3,00">3,00</option>
+                                    <option value="3,25">3,25</option>
+                                    <option value="3,50">3,50</option>
+                                    <option value="3,75">3,75</option>
+                                    <option value="4,00">4,00</option>
+                                    <option value="4,25">4,25</option>
+                                    <option value="4,50">4,50</option>
+                                    <option value="4,75">4,75</option>
+                                    <option value="5,00">5,00</option>
+                                    <option value="5,25">5,25</option>
+                                    <option value="5,50">5,50</option>
+                                    <option value="5,75">5,75</option>
+                                    <option value="6,00">6,00</option>
+                                </select>
+                            </NotAuthorized>
+                        </AuthorizeView>
+
+                    </div>
+                </div>
+            </div>
+
+            @if (actualPage == "registro")
+            {
+                <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Contraseña</label><input @bind="@user.Contraseña" class="form-control" type="password" required minlength="6" maxlength="12"></div>
+                <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Repetir contraseña</label><input class="form-control" type="password" required minlength="6" maxlength="12"></div>
+            }
+
+
+            <div class="col-12 my-4">
+                <button @onclick='(() => navigationManager.NavigateTo("/login"))' class="btn btn-secondary float-end" id="test" type="button" style="width: 110px; color: rgb(255, 255, 255);">Cancelar</button>
+                <button class="btn btn-primary float-end me-3" type="submit" style="width: 110px;">@textoBtn</button>
+            </div>
+
+        </div>
+
+
+        <div id="modalFormHabilidades" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nivel habilidades jugador</h5>
+                        <button class="btn btn-primary btn-close" type="button" data-bs-dismiss="modal" aria-label="Close" style="background-color: transparent;"> </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <div class="row g-3">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Ataque</strong></label><img class="mx-2" src="./imgs/atack.png" width="29" height="34"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;background-color: #1f9cff;height: 2px;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Volea</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Bandeja</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Remate</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Bajada de pared</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 my-4">
+                                <hr style="margin-top: 10px;margin-bottom: 2px;height: 2px;background-color: #1f9cff;">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Defensa</strong></label><img class="mx-2" src="./imgs/defense-icon.png" width="36" height="33"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;height: 2px;background-color: #1f9cff;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Globo</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Paredes</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Colocación</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 my-4">
+                                <hr style="margin-top: 10px;margin-bottom: 2px;height: 2px;background-color: #1f9cff;">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Físico</strong></label><img class="mx-2" src="./imgs/fisico-icon.jpg" width="29" height="34"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;height: 2px;background-color: #1f9cff;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Velocidad</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-right: 0px;margin-left: 10px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Resistencia</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-left: 10px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 my-4">
+                                <hr style="margin-top: 10px;margin-bottom: 2px;height: 2px;background-color: #1f9cff;">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Psicológico</strong></label><img class="mx-2" src="./imgs/psico-icon.png" width="28" height="30"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;height: 2px;background-color: #1f9cff;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Concentración</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-left: 35px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Táctica</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-left: 35px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="my-4"><button class="btn btn-primary float-end" type="submit">Guardar</button><button class="btn btn-secondary float-end float-end me-3" type="button">Cancelar</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+else
+{
+    <EditForm Model="@userSearched" OnValidSubmit="@onValidSubmit" class="shadow p-4" style="background-color: rgba(255,255,255,0.9);">
+        @if (actualPage == "registro")
+        {
+            <div class="mb-4">
+                <h3 class="text-primary" style="text-align: center;font-size: 26px;"><strong>Crear nueva cuenta</strong></h3>
+            </div>
+        }
+
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Nick</label><input @bind="@userSearched.Nick" class="form-control" type="text" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Nombre</label><input @bind="@userSearched.Nombre" class="form-control" type="text" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Apellidos</label><input @bind="@userSearched.Apellidos" class="form-control" type="text" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Email</label><input @bind="@userSearched.Email" class="form-control" type="email" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Fecha de nacimiento</label><input @bind="@userSearched.FechaNacimiento" class="form-control" type="date" required=""></div>
+            <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Teléfono</label><input @bind="@userSearched.Telefono" class="form-control" type="tel" required=""></div>
+            <div class="col-md-6">
+                <label class="form-label" style="margin-bottom: 0px;">Sexo</label>
+                <select @bind="@userSearched.Sexo" class="form-select" required="">
+                    <option value="" selected=""></option>
+                    <option value="Hombre">Hombre</option>
+                    <option value="Mujer">Mujer</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="margin-bottom: 0px;">Mano hábil</label>
+                <select @bind="@userSearched.ManoHabil" class="form-select" required="">
+                    <option value="" selected=""></option>
+                    <option value="Derecha">Derecha</option>
+                    <option value="Izquierda">Izquierda</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" style="margin-bottom: 0px;">Posición</label>
+                <select @bind="@userSearched.Posicion" class="form-select" required="">
+                    <option value="" selected=""></option>
+                    <option value="Drive">Drive</option>
+                    <option value="Reves">Revés</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label" style="margin-bottom: 0px;">Nivel</label>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized Context="Auth">
+                                <select @bind="@userSearched.TipoNivel" class="form-select" required>
+                                    <option value="" selected></option>
+                                    <option value="Manual">Manual</option>
+                                    <option disabled value="Habilidades" data-bs-toggle="modal" data-bs-target="#modalFormHabilidades">Habilidades</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView Roles="User">
+                            <Authorized Context="Auth">
+                                <select @bind="@userSearched.TipoNivel" class="form-select" required disabled>
+                                    <option value="" selected></option>
+                                    <option value="Manual">Manual</option>
+                                    <option disabled value="Habilidades" data-bs-toggle="modal" data-bs-target="#modalFormHabilidades">Habilidades</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView>
+                            <NotAuthorized Context="Auth">
+                                <select @bind="@userSearched.TipoNivel" class="form-select" required>
+                                    <option value="" selected></option>
+                                    <option value="Manual">Manual</option>
+                                    <option disabled value="Habilidades" data-bs-toggle="modal" data-bs-target="#modalFormHabilidades">Habilidades</option>
+                                </select>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" style="margin-bottom: 0px;"></label>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized Context="Auth">
+                                <select @bind="@userSearched.Nivel" class="form-select" required>
+                                    <option value="" selected=""></option>
+                                    <option value="1,00">1,00</option>
+                                    <option value="2,00">2,00</option>
+                                    <option value="2,25">2,25</option>
+                                    <option value="2,50">2,50</option>
+                                    <option value="2,75">2,75</option>
+                                    <option value="3,00">3,00</option>
+                                    <option value="3,25">3,25</option>
+                                    <option value="3,50">3,50</option>
+                                    <option value="3,75">3,75</option>
+                                    <option value="4,00">4,00</option>
+                                    <option value="4,25">4,25</option>
+                                    <option value="4,50">4,50</option>
+                                    <option value="4,75">4,75</option>
+                                    <option value="5,00">5,00</option>
+                                    <option value="5,25">5,25</option>
+                                    <option value="5,50">5,50</option>
+                                    <option value="5,75">5,75</option>
+                                    <option value="6,00">6,00</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView Roles="User">
+                            <Authorized Context="Auth">
+                                <select @bind="@userSearched.Nivel" class="form-select" required disabled>
+                                    <option value="" selected=""></option>
+                                    <option value="1,00">1,00</option>
+                                    <option value="2,00">2,00</option>
+                                    <option value="2,25">2,25</option>
+                                    <option value="2,50">2,50</option>
+                                    <option value="2,75">2,75</option>
+                                    <option value="3,00">3,00</option>
+                                    <option value="3,25">3,25</option>
+                                    <option value="3,50">3,50</option>
+                                    <option value="3,75">3,75</option>
+                                    <option value="4,00">4,00</option>
+                                    <option value="4,25">4,25</option>
+                                    <option value="4,50">4,50</option>
+                                    <option value="4,75">4,75</option>
+                                    <option value="5,00">5,00</option>
+                                    <option value="5,25">5,25</option>
+                                    <option value="5,50">5,50</option>
+                                    <option value="5,75">5,75</option>
+                                    <option value="6,00">6,00</option>
+                                </select>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView>
+                            <NotAuthorized Context="Auth">
+                                <select @bind="@userSearched.Nivel" class="form-select" required>
+                                    <option value="" selected=""></option>
+                                    <option value="1,00">1,00</option>
+                                    <option value="2,00">2,00</option>
+                                    <option value="2,25">2,25</option>
+                                    <option value="2,50">2,50</option>
+                                    <option value="2,75">2,75</option>
+                                    <option value="3,00">3,00</option>
+                                    <option value="3,25">3,25</option>
+                                    <option value="3,50">3,50</option>
+                                    <option value="3,75">3,75</option>
+                                    <option value="4,00">4,00</option>
+                                    <option value="4,25">4,25</option>
+                                    <option value="4,50">4,50</option>
+                                    <option value="4,75">4,75</option>
+                                    <option value="5,00">5,00</option>
+                                    <option value="5,25">5,25</option>
+                                    <option value="5,50">5,50</option>
+                                    <option value="5,75">5,75</option>
+                                    <option value="6,00">6,00</option>
+                                </select>
+                            </NotAuthorized>
+                        </AuthorizeView>
+
+                    </div>
+                </div>
+            </div>
+
+            @if (actualPage == "registro")
+            {
+                <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Contraseña</label><input @bind="@userSearched.Contraseña" class="form-control" type="password" required minlength="6" maxlength="12"></div>
+                <div class="col-md-6"><label class="form-label" style="margin-bottom: 0px;">Repetir contraseña</label><input class="form-control" type="password" required minlength="6" maxlength="12"></div>
+            }
+
+            @if (user.Nick.Equals(userSearched.Nick) || user.Rol.RoleId == (int)RoleDTO.rol.Admin)
+            {
+                <div class="col-12 my-4">
+                    <button @onclick='(() => navigationManager.NavigateTo("/tabla-usuarios"))' class="btn btn-secondary float-end" id="test" type="button" style="width: 110px; color: rgb(255, 255, 255);">Cancelar</button>
+                    <button class="btn btn-primary float-end me-3" type="submit" style="width: 110px;">@textoBtn</button>
+                </div>
+            }
+        </div>
+
+
+        <div id="modalFormHabilidades" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nivel habilidades jugador</h5>
+                        <button class="btn btn-primary btn-close" type="button" data-bs-dismiss="modal" aria-label="Close" style="background-color: transparent;"> </button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <div class="row g-3">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Ataque</strong></label><img class="mx-2" src="./imgs/atack.png" width="29" height="34"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;background-color: #1f9cff;height: 2px;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Volea</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                    <input type="radio" name="volea">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Bandeja</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                    <input type="radio" name="bandeja">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Remate</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                    <input type="radio" name="remate">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Bajada de pared</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                    <input type="radio" name="bajada">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 my-4">
+                                <hr style="margin-top: 10px;margin-bottom: 2px;height: 2px;background-color: #1f9cff;">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Defensa</strong></label><img class="mx-2" src="./imgs/defense-icon.png" width="36" height="33"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;height: 2px;background-color: #1f9cff;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Globo</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                    <input type="radio" name="globo">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Paredes</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                    <input type="radio" name="paredes">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Colocación</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText">
+                                                <div class="rating">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                    <input type="radio" name="colocacion">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 my-4">
+                                <hr style="margin-top: 10px;margin-bottom: 2px;height: 2px;background-color: #1f9cff;">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Físico</strong></label><img class="mx-2" src="./imgs/fisico-icon.jpg" width="29" height="34"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;height: 2px;background-color: #1f9cff;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Velocidad</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-right: 0px;margin-left: 10px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                    <input type="radio" name="velocidad">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Resistencia</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-left: 10px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                    <input type="radio" name="resistencia">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 my-4">
+                                <hr style="margin-top: 10px;margin-bottom: 2px;height: 2px;background-color: #1f9cff;">
+                                <div class="col col-md-12 center-columnText"><label class="form-label"><strong>Psicológico</strong></label><img class="mx-2" src="./imgs/psico-icon.png" width="28" height="30"></div>
+                                <hr style="margin-top: 10px;margin-bottom: 8px;height: 2px;background-color: #1f9cff;">
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Concentración</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-left: 35px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                    <input type="radio" name="concentracion">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="row g-3">
+                                        <div class="col col-md-2 center-columnText"><label class="col-form-label">Táctica</label></div>
+                                        <div class="col-md-6 ajustarStars-mobile">
+                                            <div class="col center-columnText" style="margin-left: 35px;">
+                                                <div class="rating">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                    <input type="radio" name="compañerismo">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="my-4"><button class="btn btn-primary float-end" type="submit">Guardar</button><button class="btn btn-secondary float-end float-end me-3" type="button">Cancelar</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+
+
+@code {
+
+    public string actualPage { get; set; }
+    [Parameter] public UsuarioRegistradoDTO user { get; set; }
+    [Parameter] public UsuarioRegistradoDTO userSearched { get; set; }
+    [Parameter] public EventCallback onValidSubmit { get; set; }
+    [Parameter] public String textoBtn { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        actualPage = navigationManager.Uri.Replace(navigationManager.BaseUri, "");
+    }
+}

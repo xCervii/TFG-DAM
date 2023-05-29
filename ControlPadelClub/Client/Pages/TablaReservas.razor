@@ -1,0 +1,277 @@
+﻿@page "/tabla-reservas"
+@layout EmptyLayout
+@inject HttpClient http
+@inject IJSRuntime js
+@inject ISessionStorageService almacenarSesionService
+@inject NavigationManager navigationManager
+@inject IModalService Modal
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+
+@if (reservasDTO == null)
+{
+    <text>Cargando reservas...</text>
+}
+
+else if (reservasDTO.Length == 0)
+{
+    <text>No hay reservas</text>
+}
+
+else
+{
+
+    <body>
+        <nav class="navbar navbar-light navbar-expand-md bg-white" style="padding: 0px;">
+            <div class="container"><a class="navbar-brand mx-auto" href="#"><img id="logo" src="./imgs/logoApp.png" width="200" height="100">&nbsp;</a></div>
+        </nav>
+        <section class="position-relative py-5 px-2 bg-imageIndex" style="align-items: center;display: flex;min-height: 100vh;">
+            <div class="container">
+                <div class="row">
+                    <div class="col col-md-12 offset-md-0">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive table table-bordered table-striped my-3">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <AuthorizeView Roles="User">
+                                                    <Authorized Context="Auth">
+                                                        <th>Fecha</th>
+                                                        <th>Hora</th>
+                                                        <th>Pista</th>
+                                                        <th>Jugadores</th>
+                                                        <th>Precio</th>
+                                                        <th>Forma de pago</th>
+                                                        <th>Estado</th>
+                                                    </Authorized>
+                                                </AuthorizeView>
+
+                                                <AuthorizeView Roles="Admin">
+                                                    <Authorized Context="Auth">
+                                                        <th>Nick</th>
+                                                        <th>Nivel</th>
+                                                        <th>Jugadores</th>
+                                                        <th>Fecha</th>
+                                                        <th>Hora</th>
+                                                        <th>Pista</th>
+                                                        <th>Precio</th>
+                                                        <th>Forma de pago</th>
+                                                        <th>Estado</th>
+                                                    </Authorized>
+                                                </AuthorizeView>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var reserva in reservasDTO)
+                                            {
+                                                <tr>
+                                                    <AuthorizeView Roles="User">
+                                                        <Authorized Context="Auth">
+                                                            <td>@reserva.Fecha.ToShortDateString()</td>
+                                                            <td>@reserva.HoraInicio.ToShortTimeString()-@reserva.HoraFin.ToShortTimeString()</td>
+                                                            <td>@reserva.Pista.Numero</td>
+                                                            <td>@(reserva.JugadoresInvitados.Count + 1)</td>
+                                                            <td>@reserva.Pago.CantidadPago EUR</td>
+                                                            <td>@reserva.Pago.FormaPago</td>
+                                                            <td>@reserva.Estado</td>
+                                                            <td>
+                                                                <a class="btn btn-danger" @onclick="(() =>CancelarReserva(reserva))">Cancelar</a>
+                                                            </td>
+                                                        </Authorized>
+                                                    </AuthorizeView>
+
+                                                    <AuthorizeView Roles="Admin">
+                                                        <Authorized Context="Auth">
+                                                            @if (reserva.User != null)
+                                                            {
+                                                                <td>@reserva.User.Nick</td>
+                                                                <td>@reserva.User.Nivel</td>
+                                                                <td>@(reserva.JugadoresInvitados.Count + 1)</td>
+                                                            }
+
+                                                            else
+                                                            {
+                                                                <td>@reserva.JugadoresInvitados.FirstOrDefault().Nick</td>
+                                                                <td>@reserva.JugadoresInvitados.FirstOrDefault().Nivel</td>
+                                                                <td>@(reserva.JugadoresInvitados.Count)</td>
+                                                            }
+
+                                                            <td>@reserva.Fecha.ToShortDateString()</td>
+                                                            <td>@reserva.HoraInicio.ToShortTimeString()-@reserva.HoraFin.ToShortTimeString()</td>
+                                                            <td>@reserva.Pista.Numero</td>
+                                                            <td>@reserva.Pago.CantidadPago EUR</td>
+                                                            <td>@reserva.Pago.FormaPago</td>
+                                                            <td>@reserva.Estado</td>
+                                                            <td>
+                                                                @if (reserva.Estado.Equals(ReservaDTO.EstadoReserva.ESPERA))
+                                                                {
+                                                                    <a class="btn btn-success mx-1" @onclick="(() =>AceptarReserva(reserva))">Aceptar</a>
+                                                                }
+                                                                <a class="btn btn-danger mx-1 my-1" @onclick="(() =>CancelarReserva(reserva))">Cancelar</a>
+                                                                <a class="btn btn-primary mx-1 my-1" @onclick="(() => VerJugadoresReserva(reserva))">Ver jugadores</a>
+                                                            </td>
+                                                        </Authorized>
+                                                    </AuthorizeView>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="text-center bg-dark">
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(217, 217, 217); background-color: rgba(41, 44, 47, 0);">TFG Adrian.</span><br><br></p>
+            </div>
+            <div class="d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center social-links social-icons"><a href="#"><i class="fa fa-envelope"></i></a><a href="#"><i class="fa fa-linkedin"></i></a><a href="#"><i class="fa fa-github"></i></a></div>
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(255, 171, 64); background-color: rgba(10, 10, 10, 0);">ControlPádelClub v1.0 - 2023</span><br><br></p>
+            </div>
+        </footer>
+    </body>
+}
+
+
+@code {
+
+    ReservaDTO[] reservasDTO;
+    UsuarioRegistradoDTO user { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string nick = await almacenarSesionService.GetItemAsync<string>("username"); //recuperamos el nick de la memoria del navegador
+        user = await http.GetFromJsonAsync<UsuarioRegistradoDTO>($"api/GetUsuarioRegistradoByNick/{nick}");
+        await CargarReservas();
+    }
+
+
+    public async Task CargarReservas()
+    {
+        if (user.Rol.RolName == "User") reservasDTO = await http.GetFromJsonAsync<ReservaDTO[]>($"api/GetAllReservasByUsuarioRegistradoNick/{user.Nick}"); //user.Reservas.ToArray()
+        if (user.Rol.RolName == "Admin") reservasDTO = await http.GetFromJsonAsync<ReservaDTO[]>($"api/GetAllReservas");
+    }
+
+    private void VerJugadoresReserva(ReservaDTO reserva)
+    {
+        List<ReservaDTO> reservas = new List<ReservaDTO>()
+        {
+            reserva
+        };
+
+        var parameters = new ModalParameters()
+            .Add(nameof(JugadoresPartida.ReservasPista), reservas);
+
+        Modal.Show<JugadoresPartida>("Jugadores de la reserva", parameters);
+    }
+
+
+    public async Task CancelarReserva(ReservaDTO reserva)
+    {
+        string msg = "¿Quieres cancelar la reserva?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            var response = await http.DeleteAsync($"api/DeleteReservaById/{reserva.ReservaId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                reservasDTO = await http.GetFromJsonAsync<ReservaDTO[]>($"api/GetAllReservas");
+                ReservaDTO[] reservasPistaConfirmadas = reservasDTO.Where(rDTO => rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)
+                && rDTO.Fecha.ToShortDateString().Equals(reserva.Fecha.ToShortDateString())
+                && rDTO.Pista.PistaId == reserva.Pista.PistaId
+                && rDTO.Pista.HoraInicio.ToShortTimeString() == reserva.Pista.HoraInicio.ToShortTimeString()
+                ).ToArray();
+
+                reservasPistaConfirmadas = reservasPistaConfirmadas.Where(r => r.ReservaId != reserva.ReservaId).ToArray();
+
+                foreach (var r in reservasPistaConfirmadas)
+                {
+                    if (r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA))
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA;
+                        response = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response.IsSuccessStatusCode) return;
+                    }
+                }
+    
+                navigationManager.NavigateTo($"/tabla-reservas", true);
+            }
+        }
+    }
+
+    public async Task AceptarReserva(ReservaDTO reserva)
+    {
+        string msg = "¿Quieres aceptar la reserva?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            int numJugadoresReserva = 0;
+            int numJugadoresConfirmados = 0;
+
+            if (reserva.User != null) numJugadoresReserva++;
+            numJugadoresReserva = numJugadoresReserva + reserva.JugadoresInvitados.Count();
+
+            var reservasPistaConfirmadas = reservasDTO.Where(rDTO => rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)
+                && rDTO.Fecha.ToShortDateString().Equals(reserva.Fecha.ToShortDateString())
+                && rDTO.Pista.PistaId == reserva.Pista.PistaId
+                && rDTO.Pista.HoraInicio.ToShortTimeString() == reserva.Pista.HoraInicio.ToShortTimeString()
+            );
+
+            foreach (var r in reservasPistaConfirmadas)
+            {
+                if (r.User != null) numJugadoresConfirmados++;
+                numJugadoresConfirmados = numJugadoresConfirmados + r.JugadoresInvitados.Count();
+            }
+
+            if (4 - numJugadoresConfirmados >= numJugadoresReserva)
+            {
+
+                if (numJugadoresConfirmados + numJugadoresReserva == 4)
+                {
+                    reserva.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                    foreach (var r in reservasPistaConfirmadas)
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                        var response1 = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response1.IsSuccessStatusCode) return;
+                    }
+                }
+
+                else
+                {
+                    reserva.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA;
+                }
+
+                var response2 = await http.PutAsJsonAsync("api/UpdateReserva", reserva);
+                if (response2.IsSuccessStatusCode)
+                {
+                    navigationManager.NavigateTo($"/tabla-reservas", true);
+                }
+            }
+
+            else
+            {
+                await js.InvokeVoidAsync("alert", $"No se puede confirmar la reserva de '{numJugadoresReserva} jugadores' ya que en pista existen '{numJugadoresConfirmados} jugadores' confirmados y se superarían los 4 máximos necesarios");
+            }
+        }
+    }
+
+   
+}

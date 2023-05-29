@@ -1,0 +1,24 @@
+.nav-link {
+  border-radius: 0px !important;
+  transition: all 0.5s;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link small {
+  font-size: 12px;
+}
+
+.nav-link:hover {
+  background-color: #52525240 !important;
+}
+
+.nav-link .fa {
+  transition: all 1s;
+  font-size: 20px;
+}
+
+.dropdown-item {
+  display: inline;
+}
+

@@ -1,0 +1,234 @@
+﻿@inject IModalService Modal
+@inject HttpClient http
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+
+<AuthorizeView Roles="Admin">
+    <div style="display:inline-flex; column-gap:15px;">
+        <h5>Jugadores confirmados</h5>
+        <button disabled class="btn btn-warning btn-sm" type="button" style="" data-bs-toggle="modal" data-bs-target="#modalFormResultado">Resultado</button>
+    </div>
+
+
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nick</th>
+                    <th>Nivel</th>
+                    <th>Precio</th>
+                    <th>Pagado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reserva in ReservasPista.Where(r => r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)))
+                {
+                    List<JugadorDTO> jugadoresConfirmados = new List<JugadorDTO>();
+                    if (reserva.User != null)
+                    {
+                        jugadoresConfirmados.Add(reserva.User);
+                    }
+                    jugadoresConfirmados.AddRange(reserva.JugadoresInvitados);
+                    @foreach (var jugador in jugadoresConfirmados)
+                    {
+                        <tr>
+                            <td>@jugador.Nick</td>
+                            <td>@jugador.Nivel</td>
+                            @if (jugador.GetType().Name == "UsuarioRegistradoDTO")
+                            {
+                                <td>@reserva.Pago.CantidadPago EUR</td>
+                                <td><input type="checkbox" checked="@reserva.Pago.PagoRealizado" @onchange="(() => ActualizarPago(reserva))" id="cboxPagoJugador" value="pago_jugador"></td>
+                                <td><button @onclick="(() => EliminarJugadorPartida(reserva))" class="btn btn-danger float-end me-2" type="button">Eliminar</button></td>
+                            }
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <br />
+
+    <h5> Jugadores en espera</h5>
+    <div class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nick</th>
+                    <th>Nivel</th>
+                    <th>Precio</th>
+                    <th>Pagado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reserva in ReservasPista.Where(r => r.Estado.Equals(ReservaDTO.EstadoReserva.ESPERA)))
+                {
+                    List<JugadorDTO> jugadoresEspera = new List<JugadorDTO>();
+                    if (reserva.User != null)
+                    {
+                        jugadoresEspera.Add(reserva.User);
+                    }
+                    jugadoresEspera.AddRange(reserva.JugadoresInvitados);
+                    @foreach (var jugador in jugadoresEspera)
+                    {
+                        <tr>
+                            <td>@jugador.Nick</td>
+                            <td>@jugador.Nivel</td>
+                            @if (jugador.GetType().Name == "UsuarioRegistradoDTO")
+                            {
+                                <td>@reserva.Pago.CantidadPago EUR</td>
+                                <td><input type="checkbox" checked="@reserva.Pago.PagoRealizado" @onchange="(() => ActualizarPago(reserva))" id="cboxPagoJugador" value="pago_jugador"></td>
+                                <td>
+                                    <div style="display:inline-flex; column-gap:10px;">
+
+                                        <button @onclick="(() => AceptarReserva(reserva))" class="btn btn-success" type="button">Aceptar</button>
+                                        <button @onclick="(() => EliminarJugadorPartida(reserva))" class="btn btn-danger" type="button">Eliminar</button>
+
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="my-4">
+        <button @onclick="ShowAñadirInvitado" class="btn btn-primary float-end float-end me-3" style="margin-top: 20px;" type="button">Añadir invitado</button>
+        <button @onclick="ShowModalTablaUsersData" class="btn btn-primary float-end float-end me-3" style="margin-top: 20px;" type="button">Añadir usuario</button>
+    </div>
+
+</AuthorizeView>
+
+
+
+@code {
+
+    [Parameter] public List<ReservaDTO> ReservasPista { get; set; }
+    [Parameter] public PistaDTO Pista { get; set; }
+    [Parameter] public DateTime FechaSeleccionada { get; set; }
+
+    private async Task ShowModalTablaUsersData()
+    {
+        var parameters = new ModalParameters()
+            .Add(nameof(TablaUsersData.Pista), Pista)
+            .Add(nameof(TablaUsersData.FechaSeleccionada), FechaSeleccionada)
+            .Add(nameof(TablaUsersData.ReservasPista), ReservasPista);
+
+        var options = new ModalOptions()
+            {
+                HideCloseButton = true
+            };
+
+        Modal.Show<TablaUsersData>(string.Empty, parameters, options);
+    }
+
+    private async Task ShowAñadirInvitado()
+    {
+        var parameters = new ModalParameters()
+            .Add(nameof(AñadirInvitado.Pista), Pista)
+            .Add(nameof(AñadirInvitado.FechaSeleccionada), FechaSeleccionada)
+            .Add(nameof(AñadirInvitado.ReservasPista), ReservasPista);
+
+        Modal.Show<AñadirInvitado>("Añadir invitado a partida", parameters);
+    }
+
+    private async Task EliminarJugadorPartida(ReservaDTO reserva)
+    {
+        string msg = "¿Quieres eliminar al jugador y cancelar su reserva?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            var response = await http.DeleteAsync($"api/DeleteReservaById/{reserva.ReservaId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                ReservaDTO[] reservasPistaConfirmadas = ReservasPista.Where(rDTO => rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)).ToArray();
+                reservasPistaConfirmadas = reservasPistaConfirmadas.Where(r => r.ReservaId != reserva.ReservaId).ToArray();
+
+                foreach (var r in reservasPistaConfirmadas)
+                {
+                    if (r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA))
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA;
+                        response = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response.IsSuccessStatusCode) return;
+                    }
+                }
+
+                navigationManager.NavigateTo($"/pistas?fecha={FechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+            }
+        }
+    }
+
+    public async Task AceptarReserva(ReservaDTO reserva)
+    {
+        string msg = $"¿Quieres aceptar la reserva?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            int numJugadoresReserva = 0;
+            int numJugadoresConfirmados = 0;
+
+            if (reserva.User != null) numJugadoresReserva++;
+            numJugadoresReserva = numJugadoresReserva + reserva.JugadoresInvitados.Count();
+
+            ReservaDTO[] reservasPistaConfirmadas = ReservasPista.Where(rDTO => rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || rDTO.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)).ToArray();
+            foreach (var r in reservasPistaConfirmadas)
+            {
+                if (r.User != null) numJugadoresConfirmados++;
+                numJugadoresConfirmados = numJugadoresConfirmados + r.JugadoresInvitados.Count();
+            }
+
+            if (4 - numJugadoresConfirmados >= numJugadoresReserva)
+            {
+                if (numJugadoresConfirmados + numJugadoresReserva == 4)
+                {
+                    reserva.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                    foreach (var r in reservasPistaConfirmadas)
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                        var response1 = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response1.IsSuccessStatusCode) return;
+                    }
+                }
+
+                else
+                {
+                    reserva.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA;
+                }
+
+                var response2 = await http.PutAsJsonAsync("api/UpdateReserva", reserva);
+                if (response2.IsSuccessStatusCode)
+                {
+                    navigationManager.NavigateTo($"/pistas?fecha={FechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+                }
+            }
+
+            else
+            {
+                await js.InvokeVoidAsync("alert", $"No se puede confirmar la reserva de '{numJugadoresReserva} jugadores' ya que en pista existen '{numJugadoresConfirmados} jugadores' confirmados y se superarían los 4 máximos necesarios");
+            }
+        }
+    }
+
+    public async Task ActualizarPago(ReservaDTO reserva)
+    {
+        reserva.Pago.PagoRealizado = !reserva.Pago.PagoRealizado;
+        var response = await http.PutAsJsonAsync("api/UpdateReserva", reserva);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await js.InvokeVoidAsync("alert", "Pago actualizado correctamente");
+        }
+
+        else
+        {
+            await js.InvokeVoidAsync("alert", "ERROR al actualizar el pago");
+        }
+    }
+}

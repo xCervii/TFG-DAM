@@ -1,0 +1,159 @@
+﻿@page "/menu-principal"
+@layout EmptyLayout
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider authStateProvider
+@inject HttpClient http
+@inject ISessionStorageService almacenarSesionService
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+@if (user == null)
+{
+    <text>Cargando...</text>
+}
+
+else
+{
+    <body>
+        <nav class="navbar navbar-light navbar-expand-md bg-white" style="padding: 0px;">
+            <div class="container" style="width: auto;">
+                <div class="dropdown" style="list-style: none;">
+                    <AuthorizeView Roles="Admin">
+                        <Authorized>
+                            <a id="dropdownUser3" class="d-flex align-items-center justify-content-center link-dark text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><img class="rounded-circle" src=./imgs/logoPalaIndex.png alt="mdo" width="50" height="50" /></a>
+                            <ul class="dropdown-menu text-small shadow" style="font-size: 14px;">
+                                <li><span class="dropdown-item" style="color: red;">Administrador</span></li>
+                                <li><a class="dropdown-item" @onclick="@CerrarSesion" href="#">Cerrar sesión</a><i class="fa fa-sign-out" style="margin-left: 0px;"></i></li>
+                            </ul>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="User">
+                        <Authorized>
+                            <a id="dropdownUser3" class="d-flex align-items-center justify-content-center link-dark text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><img class="rounded-circle" src=./imgs/jugadores/paco.jpg alt="mdo" width="50" height="50" /></a>
+                            <ul class="dropdown-menu text-small shadow" style="font-size: 14px;">
+                                <li><a class="dropdown-item" href="perfil/@user.Nick">Perfil</a></li>
+                                <li><a class="dropdown-item disabled" href="recargasSaldo.html">Recargas y saldo</a></li>
+                                <li><a class="dropdown-item" href="tabla-usuarios">Buscar jugadores</a></li>
+                                <li><a class="dropdown-item disabled" href="contacto.html">Contacto</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><span class="dropdown-item" style="color:#0a58ca;">@user.Nick</span></li>
+                                <li><a class="dropdown-item" @onclick="@CerrarSesion" href="#">Cerrar sesión</a> <i class="fa fa-sign-out" aria-hidden="true" style="margin-left:-10px;"></i></li>
+                            </ul>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+                <a class="navbar-brand mx-auto" href="#"><img id="logo" src="./imgs/logoApp.png" width="200" height="100" /></a>
+            </div>
+        </nav>
+        <section class="position-relative py-5 px-2 bg-imageIndex" style="align-items: center;display: flex;min-height: 100vh;">
+            <AuthorizeView Roles="User">
+                <Authorized>
+                    <div class="row gy-3 my-3 center-columnText" style="width: 100%;justify-content: center; margin-left: auto;  margin-right: auto;">
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button @onclick="@VerPistas" class="btn btn-primary" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-television fa-5x"></i><small style="display: block;">Ver Pistas</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button @onclick="@(() => navigationManager.NavigateTo("/tabla-reservas") )" class="btn btn-primary" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-book fa-5x"></i><small style="display: block;">Reservas</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button class="btn btn-primary disabled bg-imageBlock" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-bar-chart fa-5x"></i><small style="display: block;">Resultados</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button class="btn btn-primary disabled bg-imageBlock" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-table fa-5x"></i><small style="display: block;">Entrenamientos</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button class="btn btn-primary disabled bg-imageBlock" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-trophy fa-5x"></i><small style="display: block;">Competiciones</small></button></div>
+                            </div>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <div class="row gy-3 my-3 center-columnText" style="width: 100%;justify-content: center; margin-left: auto;  margin-right: auto;">
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button @onclick="@VerPistas" class="btn btn-danger" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-television fa-5x"></i><small style="display: block;">Ver Pistas</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button @onclick="@(()=>navigationManager.NavigateTo("/tabla-reservas"))" class="btn btn-danger" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-book fa-5x"></i><small style="display: block;">Gestión de Reservas</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button class="btn btn-danger disabled bg-imageBlock" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-table fa-5x"></i><small style="display: block;">Gestión de Entrenamientos</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button class="btn btn-danger disabled bg-imageBlock" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-trophy fa-5x"></i><small style="display: block;">Gestión de Competiciones</small></button></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2" style="margin-top: 0px;">
+                            <div class="card" style="height: 100%;margin-top: 16px;margin-bottom: 16px;">
+                                <div class="card-body center-columnText" style="height: 200px;justify-content: center;padding: 0px;"><button @onclick="@(()=>navigationManager.NavigateTo("/tabla-usuarios"))" class="btn btn-danger" type="button" style="width: 100%;height: 100%;padding: 0px 0px;"><i class="fa fa-users fa-5x"></i><small style="display: block;">Gestión de Usuarios</small></button></div>
+                            </div>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </section>
+        <footer class="text-center bg-dark">
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(217, 217, 217); background-color: rgba(41, 44, 47, 0);">TFG Adrian.</span><br><br></p>
+            </div>
+            <div class="d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center social-links social-icons"><a href="#"><i class="fa fa-envelope"></i></a><a href="#"><i class="fa fa-linkedin"></i></a><a href="#"><i class="fa fa-github"></i></a></div>
+            <div class="d-flex justify-content-center align-items-center">
+                <p><br><span style="color: rgb(255, 171, 64); background-color: rgba(10, 10, 10, 0);">ControlPádelClub v1.0 - 2023</span><br><br></p>
+            </div>
+        </footer>
+    </body>
+}
+
+
+@code {
+
+    UsuarioRegistradoDTO user { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string nick = await almacenarSesionService.GetItemAsync<string>("username"); ; //recuperamos el nick de la memoria del navegador
+        user = await http.GetFromJsonAsync<UsuarioRegistradoDTO>($"api/GetUsuarioRegistradoByNick/{nick}");
+    }
+
+
+    private void CerrarSesion()
+    {
+        ((Autenticacion)authStateProvider).CerrarSesion();
+        navigationManager.NavigateTo("/");
+    }
+
+    private void VerPistas()
+    {
+        navigationManager.NavigateTo($"/pistas?fecha={DateTime.Today.ToString("MM:dd:yyyy").Replace(":", ".")}");
+    }
+}

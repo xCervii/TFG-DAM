@@ -1,0 +1,51 @@
+﻿@page "/tabla-usuarios"
+@layout EmptyLayout
+@*@attribute [Authorize]*@
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-md bg-white" style="padding: 0px;">
+        <div class="container"><a class="navbar-brand mx-auto" href="#"><img id="logo" src="./imgs/logoApp.png" width="200" height="100">&nbsp;</a></div>
+    </nav>
+    <section class="position-relative py-5 px-2 bg-imageIndex" style="align-items: center;display: flex;min-height: 100vh;">
+        <div class="container">
+            <div class="row">
+                <div class="col col-md-12 offset-md-0">
+                    <div class="card">
+                        <div class="card-body">
+                            <TablaUsersData></TablaUsersData>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="text-center bg-dark">
+        <div class="d-flex justify-content-center align-items-center">
+            <p><br><span style="color: rgb(217, 217, 217); background-color: rgba(41, 44, 47, 0);">TFG Adrian.</span><br><br></p>
+        </div>
+        <div class="d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center social-links social-icons"><a href="#"><i class="fa fa-envelope"></i></a><a href="#"><i class="fa fa-linkedin"></i></a><a href="#"><i class="fa fa-github"></i></a></div>
+        <div class="d-flex justify-content-center align-items-center">
+            <p><br><span style="color: rgb(255, 171, 64); background-color: rgba(10, 10, 10, 0);">ControlPádelClub v1.0 - 2023</span><br><br></p>
+        </div>
+    </footer>
+</body>
+
+
+@code {
+
+
+}

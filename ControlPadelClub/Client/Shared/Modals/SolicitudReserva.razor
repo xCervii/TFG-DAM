@@ -1,0 +1,131 @@
+﻿@inject HttpClient http
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+
+@if (pistaSeleccionada != null)
+{
+  <div class="mb-3"><label class="form-label" style="margin-bottom: 0px;"><strong>Fecha: </strong>@fechaSeleccionada.ToShortDateString()</label><span class="mx-2"></span></div>
+  <div class="mb-3"><label class="form-label" style="margin-bottom: 0px;"><strong>Pista: </strong>@pistaSeleccionada.Numero</label><span class="mx-2"></span></div>
+  <div class="mb-3"><label class="form-label" style="margin-bottom: 0px;"><strong>Hora: </strong>@pistaSeleccionada.HoraInicio.ToString("hh:mm") - @pistaSeleccionada.HoraFin.ToString("hh:mm")</label><span class="mx-2"></span></div>
+}
+
+<div class="mb-3">
+    <label class="form-label" style="margin-bottom: 0px;"><strong>Número de invitados:</strong></label>
+    <select @bind="numInvitadosSeleccionados" class="form-select mx-2" style="width: 65px;display: inline;">
+        <option value="0" selected="">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+    </select>
+</div>
+<div class="mb-3">
+    <label class="form-label" style="margin-bottom: 0px;"><strong>Jugadores:</strong></label>
+    <ul style="display: inline; list-style-position: inside;">
+        @if (user != null)
+        {
+            <li style="padding: 10px;margin-top: 10px;border: 1px groove rgb(33, 37, 41);">@user.Nick</li>
+            @if (numInvitadosSeleccionados > 0)
+            {
+                @for (int i = 0; i < numInvitadosSeleccionados; i++)
+                {
+                    int index = i; //Para que funcione el indice en el bind
+                    var jugadorInvitado = new JugadorInvitadoDTO();
+                    jugadorInvitado.Nick = $"Invitado{i + 1}_{@user.Nick}";
+
+                    //Evita que la lista sea mayor de 3
+                    if (!jugadoresInvitados.Where(n => n.Nick == jugadorInvitado.Nick).Any())
+                    {
+                        jugadoresInvitados.Add(new JugadorInvitadoDTO());
+                        jugadoresInvitados[i].Nick = jugadorInvitado.Nick;
+                        jugadoresInvitados[i].Nivel = Convert.ToDecimal("1,00");
+                    };
+
+                    <li style="margin-top: 10px;margin-bottom: 10px;padding: 10px;border: 1px groove rgb(33, 37, 41);">
+                        <div style="display: inline;">
+                            @jugadoresInvitados[i].Nick.
+                            <label class="form-label mx-1" style="margin-bottom: 0px;display: inline;">Nivel<strong>:</strong></label>
+                            <select @bind="@jugadoresInvitados[index].Nivel" class="form-select" style="width: 100px; display: inline;" required>
+                                <option value></option>
+                                <option selected value="1,00">1.00</option>
+                                <option value="2,00">2.00</option>
+                                <option value="2,25">2.25</option>
+                                <option value="2,50">2.50</option>
+                                <option value="2,75">2.75</option>
+                                <option value="3,00">3.00</option>
+                                <option value="3,25">3.25</option>
+                                <option value="3,50">3.50</option>
+                                <option value="3,75">3.75</option>
+                                <option value="4,00">4.00</option>
+                                <option value="4,25">4.25</option>
+                                <option value="4,50">4.50</option>
+                                <option value="4,75">4.75</option>
+                                <option value="5,00">5.00</option>
+                                <option value="5,25">5.25</option>
+                                <option value="5,50">5.50</option>
+                                <option value="5,75">5.75</option>
+                                <option value="6,00">6.00</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 5px;"><input disabled type="checkbox" style="display: inline;width: 15.7px;height: 14px;margin-right: 5px;"><input disabled class="form-control" type="email" style="width: 290px;display: inline;height: 31px;" placeholder="Enviar copia vía email"></div>
+                        <div></div>
+                    </li>
+                }
+            }
+
+            precioApagar = 5 * (1 + numInvitadosSeleccionados);
+        }
+    </ul>
+</div>
+<div class="mb-3"><label class="form-label" style="margin-bottom: 0px;"><strong>Precio:</strong></label><span class="mx-2">@precioApagar EUR</span></div>
+<div class="mb-3">
+    <label class="form-label" style="margin-bottom: 0px;"><strong>Forma de pago:</strong></label>
+    <select @bind="formaPagoSeleccionada" class="form-select mx-2" style="width: 110px;display: inline;">
+        <option value=""></option>
+        <option value="Club" selected>Club</option>
+        <option value="Saldo" disabled>Saldo</option>
+        <option value="Tarjeta" disabled>Tarjeta</option>
+    </select>
+</div>
+<div class="my-4"><button @onclick="ConfirmarSolicitud" class="btn btn-primary float-end" type="submit">Confirmar</button><button class="btn btn-secondary float-end float-end me-3" type="button">Cancelar</button></div>
+
+@code {
+
+    [Parameter] public DateTime fechaSeleccionada { get; set; }
+    [Parameter] public PistaDTO pistaSeleccionada { get; set; }
+    [Parameter] public UsuarioRegistradoDTO user { get; set; }
+
+    List<JugadorInvitadoDTO> jugadoresInvitados = new List<JugadorInvitadoDTO>();
+    int numInvitadosSeleccionados;
+
+    decimal precioApagar { get; set; }
+    string formaPagoSeleccionada = "Club";
+
+    private async Task ConfirmarSolicitud()
+    {
+        ReservaDTO solicitudReserva = new ReservaDTO
+            {
+                Fecha = fechaSeleccionada,
+                Pista = pistaSeleccionada,
+                HoraInicio = pistaSeleccionada.HoraInicio,
+                HoraFin = pistaSeleccionada.HoraFin,
+                User = user,
+                JugadoresInvitados = jugadoresInvitados.GetRange(0, numInvitadosSeleccionados), //Jugadores Invitados elegidos
+                Pago = new PagoDTO
+                {
+                    CantidadPago = (float)precioApagar,
+                    PagoRealizado = false,
+                    FormaPago = formaPagoSeleccionada
+                },
+                Estado = ReservaDTO.EstadoReserva.ESPERA,
+                Partida = null
+            };
+
+        var response = await http.PostAsJsonAsync("api/CrearReserva", solicitudReserva);
+
+        if (response.IsSuccessStatusCode)
+        {
+            navigationManager.NavigateTo($"/pistas?fecha={fechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+        }
+    }
+
+}

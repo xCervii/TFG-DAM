@@ -1,0 +1,253 @@
+﻿@inject HttpClient http
+@inject IJSRuntime js
+@inject ISessionStorageService almacenarSesionService
+@inject NavigationManager navigationManager
+
+
+<head>
+    <link rel="stylesheet" href="./fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/loginAndRegister.css">
+    <link rel="stylesheet" href="./css/mainMenu.css">
+    <link rel="stylesheet" href="./css/parrillaPistas.css">
+    <link rel="stylesheet" href="./css/perfil.css">
+    <link rel="stylesheet" href="./css/stars.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/testCSS.css">
+    <link rel="stylesheet" href="./css/toggle.css">
+</head>
+
+
+@if (userList == null)
+{
+    <text>Cargando usuarios...</text>
+}
+
+
+else
+{
+    @if (actualPage != "tabla-usuarios")
+    {
+        <div class="modal-header my-5" style="margin-top: -20px !important;">
+            <h5>Añadir usuario a la partida</h5>
+            <button @onclick="Close" type="button" class="btn-close" aria-label="Close"></button>
+        </div>
+    }
+
+    <input @bind="usuarioInfo" @bind:event="oninput" @onkeypress="((KeyboardEventArgs e) => BuscarUsuariosKeyPress(e))" type="text" class="my-1 me-2" placeholder="Buscar usuario" style="width: 255px;">
+    <button @onclick="CargarUsuariosFiltrados" class="btn btn-primary" type="button" style="margin-right: 5px;">Buscar</button>
+    <button @onclick="LimpiarUsuariosFiltrados" class="btn btn-secondary me-2" type="button">Limpiar</button>
+    <div class="table-responsive table table-bordered table-striped my-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nick</th>
+                    <th>Nivel</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in userList)
+                {
+                    <tr>
+                        <td>@user.Nick</td>
+                        <td>@user.Nivel</td>
+                        <td>@user.Nombre</td>
+                        <td>@user.Apellidos</td>
+                        <td>
+                            <AuthorizeView Roles="User">
+                                <Authorized Context="Auth">
+                                    <a class="btn btn-success" href="perfil/@user.Nick">Ver</a>
+                                </Authorized>
+                            </AuthorizeView>
+
+                            @if (actualPage == "tabla-usuarios")
+                            {
+                                <AuthorizeView Roles="Admin">
+                                    <Authorized Context="Auth">
+                                        <a class="btn btn-warning" href="perfil/@user.Nick">Editar</a>
+                                        <button @onclick="(() => BorrarUsuario(user.JugadorId))" class="btn btn-danger">Borrar</button>
+                                    </Authorized>
+                                </AuthorizeView>
+                            }
+
+                            else
+                            {
+                                <AuthorizeView Roles="Admin">
+                                    <Authorized Context="Auth">
+                                        <button @onclick="(() => AñadirUsuarioAPartida(user.JugadorId))" class="btn btn-primary">Añadir</button>
+                                    </Authorized>
+                                </AuthorizeView>
+                            }
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (actualPage == "tabla-usuarios")
+    {
+        <AuthorizeView Roles="Admin">
+            <Authorized Context="Auth">
+                <div><button class="btn btn-primary me-2" type="button"><a href="registro" style="text-decoration: none;"><span style="color: rgb(255, 255, 255);">Registrar</span></a></button></div>
+            </Authorized>
+        </AuthorizeView>
+    }
+}
+
+
+
+@code {
+
+    public string actualPage { get; set; }
+    UsuarioRegistradoDTO[] userList { get; set; }
+    string usuarioInfo { get; set; } = "";
+    UsuarioRegistradoDTO user { get; set; }
+
+    [Parameter] public List<ReservaDTO> ReservasPista { get; set; }
+    [Parameter] public PistaDTO Pista { get; set; }
+    [Parameter] public DateTime FechaSeleccionada { get; set; }
+    [CascadingParameter] BlazoredModalInstance ActualModal { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        actualPage = navigationManager.Uri.Replace(navigationManager.BaseUri, "");
+
+        string nick = await almacenarSesionService.GetItemAsync<string>("username");//recuperamos el nick de la memoria del navegador
+        user = await http.GetFromJsonAsync<UsuarioRegistradoDTO>($"api/GetUsuarioRegistradoByNick/{nick}");
+
+        await CargarUsuarios();
+    }
+
+    public async Task CargarUsuarios()
+    {
+        if (actualPage != "tabla-usuarios")
+        {
+            userList = await http.GetFromJsonAsync<UsuarioRegistradoDTO[]>("api/GetAllUsuariosRegistrados");
+            userList = userList.Where(u => u.Rol.RoleId != (int)RoleDTO.rol.Admin).ToArray();
+
+            if (ReservasPista.Count > 0)
+            {
+                var usersPista = ReservasPista.Select(r => r.User).Where(r => r != null).ToArray();
+                userList = userList.ExceptBy(usersPista.Select(x => x.JugadorId), y => y.JugadorId).ToArray();
+            }
+        }
+
+        else
+        {
+            userList = await http.GetFromJsonAsync<UsuarioRegistradoDTO[]>("api/GetAllUsuariosRegistrados");
+            userList = userList.Where(u => u.Rol.RoleId != (int)RoleDTO.rol.Admin && !u.Nick.Equals(user.Nick)).ToArray();
+        }
+
+    }
+
+    public async Task CargarUsuariosFiltrados()
+    {
+        await CargarUsuarios();
+
+        userList = userList.Where(u => u.Nick.ToLower().Contains(usuarioInfo.ToLower())
+        || u.Nombre.ToLower().Contains(usuarioInfo.ToLower())
+        || u.Apellidos.ToLower().Contains(usuarioInfo.ToLower()))
+        .ToArray();
+    }
+
+    public async Task LimpiarUsuariosFiltrados()
+    {
+        await CargarUsuarios();
+        usuarioInfo = "";
+    }
+
+    public async Task BorrarUsuario(int id)
+    {
+        var userSelected = userList.First(x => x.JugadorId == id);
+        string msg = $"¿Quieres borrar al usuario: {userSelected.Nick}?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            await http.DeleteAsync($"api/DeleteUsuarioRegistradoById/{id}");
+            await CargarUsuarios();
+        }
+    }
+
+    private async void BuscarUsuariosKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await CargarUsuariosFiltrados();
+            StateHasChanged();
+        }
+    }
+
+    public async Task AñadirUsuarioAPartida(int id)
+    {
+        var userSelected = userList.First(x => x.JugadorId == id);
+        string msg = $"¿Quieres añadir a la partida al usuario: {userSelected.Nick} ?";
+
+        if (await js.InvokeAsync<bool>("confirm", msg))
+        {
+            int numJugadoresReserva = 1;
+            int numJugadoresConfirmados = 0;
+
+            ReservaDTO[] reservasPistaConfirmadas = ReservasPista.Where(r => r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA) || r.Estado.Equals(ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA)).ToArray();
+
+            foreach (var r in reservasPistaConfirmadas)
+            {
+                if (r.User != null) numJugadoresConfirmados++;
+                numJugadoresConfirmados = numJugadoresConfirmados + r.JugadoresInvitados.Count();
+            }
+
+            if (4 - numJugadoresConfirmados >= numJugadoresReserva)
+            {
+                ReservaDTO solicitudReserva = new ReservaDTO
+                    {
+                        Fecha = FechaSeleccionada,
+                        Pista = Pista,
+                        HoraInicio = Pista.HoraInicio,
+                        HoraFin = Pista.HoraFin,
+                        User = userSelected,
+                        Pago = new PagoDTO
+                        {
+                            CantidadPago = (float)5,
+                            PagoRealizado = false,
+                            FormaPago = "Club"
+                        },
+                        Estado = ReservaDTO.EstadoReserva.CONFIRMADA_INCOMPLETA,
+                        Partida = null
+                    };
+
+
+                if (numJugadoresConfirmados + numJugadoresReserva == 4)
+                {
+                    solicitudReserva.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                    foreach (var r in reservasPistaConfirmadas)
+                    {
+                        r.Estado = ReservaDTO.EstadoReserva.CONFIRMADA_COMPLETA;
+                        var response1 = await http.PutAsJsonAsync("api/UpdateReserva", r);
+                        if (!response1.IsSuccessStatusCode) return;
+                    }
+                }
+
+                var response2 = await http.PostAsJsonAsync("api/CrearReserva", solicitudReserva);
+
+                if (response2.IsSuccessStatusCode)
+                {
+                    navigationManager.NavigateTo($"/pistas?fecha={FechaSeleccionada.ToString("MM:dd:yyyy").Replace(":", ".")}", true);
+                }
+            }
+
+            else
+            {
+                await js.InvokeVoidAsync("alert", $"No se puede confirmar la reserva de '{numJugadoresReserva} jugadores' ya que en pista existen '{numJugadoresConfirmados} jugadores' confirmados y se superarían los 4 máximos necesarios");
+            }
+        }
+    }
+
+    public async Task Close()
+    {
+        await ActualModal.CloseAsync();
+    }
+
+}
